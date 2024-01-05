@@ -15,6 +15,8 @@ object Main {
 
   implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(5))
   def main(args: Array[String]): Unit = {
+    val orderService = new OrderService(new OrderRepositoryImpl(DatabaseProvider.db))
+
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
     val dateFrom = Try(
@@ -26,8 +28,6 @@ object Main {
       Timestamp.from(dateFormat.parse(args(1)).toInstant))
       .toOption
       .getOrElse(Timestamp.from(Instant.now()))
-
-    val orderService = new OrderService(new OrderRepositoryImpl(DatabaseProvider.db))
 
     println("Orders grouped by product age:")
 

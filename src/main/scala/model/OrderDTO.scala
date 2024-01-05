@@ -10,7 +10,7 @@ case class OrderDTO(
                      registeredDate: Timestamp,
                      updatedAt: Timestamp,
                      title: String,
-                     state: String,
+                     state: String, //TODO SHOULD USE ENUM FOR STATE
                      items: Seq[ItemDTO]
                    )
 
