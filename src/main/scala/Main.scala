@@ -1,18 +1,14 @@
 
-import domain.{Item, Order, Product}
-import model.{ItemDTO, OrderDTO, ProductDTO}
+
 import repository.DatabaseProvider
 import repository.order.OrderRepositoryImpl
-import slick.basic.DatabaseConfig
-import slick.jdbc.JdbcBackend.Database
-import slick.jdbc.PostgresProfile
-
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.util.concurrent.Executors
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Await, ExecutionContext}
 import java.time.Instant
 import service.OrderService
+import scala.concurrent.duration.DurationInt
 import scala.util.Try
 
 object Main {
@@ -35,7 +31,10 @@ object Main {
 
     println("Orders grouped by product age:")
 
-    orderService.getOrderCount(dateFrom, dateTo).foreach {
+    Await.result(
+      orderService.getOrderCount(dateFrom, dateTo),
+      10.seconds
+    ).foreach {
       case (interval, ordersInInterval)  =>
       println(s"$interval months: ${ordersInInterval} orders")
     }

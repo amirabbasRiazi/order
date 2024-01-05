@@ -1,25 +1,22 @@
 package service
 
 import model.OrderDTO
-import domain.Product
 import repository.order.OrderRepository
 
 import java.sql.Timestamp
 import java.time.temporal.ChronoUnit
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 
 class OrderService(repository: OrderRepository)(implicit ec: ExecutionContext) {
 
-
-  def getOrderCount(dateFrom: Timestamp, dateTo: Timestamp): Map[String, Int] = {
-    Await.result(for {
-      orders <- repository.findByInterval(dateFrom, dateTo)
-      result = orders.groupBy(_._1._1).map { case ((order, pairs)) =>
-        val (items, products) = pairs.unzip
-        OrderDTO.from(order, items.map(_._2), products.head)
-      }
-    } yield groupOrdersByProductAge(result.toSeq), 10.seconds)
+  def getOrderCount(dateFrom: Timestamp, dateTo: Timestamp): Future[Map[String, Int]] = {
+    repository.findByInterval(dateFrom, dateTo).map {
+      orders =>
+        orders.groupBy(_._1._1).map { case (order, pairs) =>
+          val (items, products) = pairs.unzip
+          OrderDTO.from(order, items.map(_._2), products.head)
+        }.toSeq
+    }.map(groupOrdersByProductAge)
   }
 
   def groupOrdersByProductAge(orders: Seq[OrderDTO]): Map[String, Int] = {
@@ -40,5 +37,4 @@ class OrderService(repository: OrderRepository)(implicit ec: ExecutionContext) {
     else if (monthsSinceCreation <= 12) "7-12 months"
     else ">12 months"
   }
-
 }
